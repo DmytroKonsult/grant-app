@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Грант під ключ · Розрахунок гранту</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --paper:#F6F2E6;
+  --paper-2:#FFFDF6;
+  --ink:#1B1A17;
+  --pencil:#6E6A5F;
+  --rule:#DBD3BE;
+  --marker:#FFE04A;
+  --seal:#1A6B3C;
+  --seal-soft:rgba(26,107,60,.08);
+  --display:"Bitter",Georgia,serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  background-image:
+    linear-gradient(to bottom,rgba(219,211,190,.55) 1px,transparent 1px);
+  background-size:100% 32px;
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.5;
+  padding:18px 16px calc(40px + env(safe-area-inset-bottom));
+  max-width:560px;
+  margin:0 auto;
+  overflow-x:hidden;
+}
+.mono{font-family:var(--mono)}
+
+/* ---------- Шапка бланка ---------- */
+.blank-head{border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:6px}
+.brand{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--seal);
+}
+h1{
+  font-family:var(--display);font-weight:800;font-size:25px;
+  line-height:1.12;margin:6px 0 8px;letter-spacing:-.01em;
+}
+h1 .hl{
+  background:linear-gradient(to top,var(--marker) 0,var(--marker) 42%,transparent 42%);
+  padding:0 2px;
+}
+.doc-meta{
+  font-family:var(--mono);font-size:10.5px;color:var(--pencil);
+  letter-spacing:.06em;text-transform:uppercase;
+}
+.blank-sub{
+  font-family:var(--mono);font-size:11px;color:var(--pencil);
+  margin:8px 0 26px;letter-spacing:.04em;
+}
+
+/* ---------- Поля бланка ---------- */
+.field{margin-bottom:26px}
+.field-label{display:flex;align-items:baseline;gap:9px;margin-bottom:11px}
+.field-num{
+  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--paper-2);
+  background:var(--ink);padding:2px 6px 1px;letter-spacing:.05em;flex:0 0 auto;
+}
+.field-title{font-family:var(--display);font-weight:600;font-size:16.5px;line-height:1.25}
+.field-hint{
+  font-family:var(--mono);font-size:11px;color:var(--pencil);
+  margin:-5px 0 11px 33px;letter-spacing:.02em;
+}
+
+/* ---------- Перемикач типу ---------- */
+.segments{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.seg{
+  border:1.5px solid var(--rule);background:var(--paper-2);
+  padding:13px 12px;text-align:left;cursor:pointer;
+  font-family:var(--body);color:var(--ink);
+  transition:border-color .16s,box-shadow .16s,background .16s;
+}
+.seg-name{font-weight:600;font-size:14.5px;display:block}
+.seg-range{font-family:var(--mono);font-size:11px;color:var(--pencil);display:block;margin-top:3px}
+.seg[aria-pressed="true"]{
+  border-color:var(--seal);background:var(--seal-soft);
+  box-shadow:inset 0 0 0 1px var(--seal);
+}
+.seg[aria-pressed="true"] .seg-range{color:var(--seal)}
+
+/* ---------- Чек-бокси бонусів ---------- */
+.rows{border-top:1px solid var(--rule)}
+.row{
+  display:flex;align-items:flex-start;gap:11px;width:100%;
+  border:0;border-bottom:1px solid var(--rule);background:transparent;
+  padding:12px 2px;text-align:left;cursor:pointer;font-family:var(--body);color:var(--ink);
+}
+.box{
+  flex:0 0 auto;width:20px;height:20px;margin-top:1px;
+  border:1.5px solid var(--ink);background:var(--paper-2);position:relative;
+}
+.box svg{position:absolute;left:1px;top:0;width:19px;height:19px;
+  stroke:var(--seal);stroke-width:2.4;fill:none;stroke-linecap:round;
+  stroke-dasharray:26;stroke-dashoffset:26;transition:stroke-dashoffset .22s ease-out}
+.row[aria-pressed="true"] .box svg{stroke-dashoffset:0}
+.row[aria-pressed="true"] .row-text{font-weight:500}
+.row-text{flex:1 1 auto;font-size:14.5px;line-height:1.35}
+.row-note{display:block;font-family:var(--mono);font-size:10.5px;color:var(--pencil);margin-top:2px}
+.pct{
+  flex:0 0 auto;font-family:var(--mono);font-size:12px;font-weight:600;
+  padding:2px 6px;background:var(--rule);color:var(--pencil);
+}
+.row[aria-pressed="true"] .pct{background:var(--marker);color:var(--ink)}
+
+/* ---------- Термін ---------- */
+.terms{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.term{
+  border:1.5px solid var(--rule);background:var(--paper-2);padding:11px 4px;
+  font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;
+}
+.term span{display:block;font-size:10px;font-weight:400;color:var(--pencil);margin-top:2px}
+.term[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+.term[aria-pressed="true"] span{color:var(--seal)}
+
+/* ---------- Резолюція (печатка) ---------- */
+.verdict{margin:34px 0 0;position:relative}
+.verdict-tag{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--pencil);margin-bottom:9px;
+}
+.stamp{
+  border:2px solid var(--seal);box-shadow:0 0 0 1px var(--seal) inset;
+  background:var(--paper-2);padding:18px 16px 16px;transform:rotate(-1.1deg);
+}
+.stamp-title{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--seal);
+}
+.sum{
+  font-family:var(--display);font-weight:800;font-size:38px;line-height:1;
+  letter-spacing:-.02em;margin:8px 0 2px;color:var(--ink);
+  font-variant-numeric:tabular-nums;
+}
+.sum-note{font-family:var(--mono);font-size:11px;color:var(--pencil)}
+.bonus-line{
+  margin-top:13px;padding-top:11px;border-top:1px dashed var(--seal);
+  font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--ink);
+}
+.bonus-line b{background:var(--marker);padding:1px 4px;font-weight:600}
+.pulse{animation:pulse .34s ease-out}
+@keyframes pulse{from{transform:rotate(-1.1deg) scale(.985)}to{transform:rotate(-1.1deg) scale(1)}}
+
+/* ---------- Довідкові блоки ---------- */
+.strip{
+  margin-top:14px;border-left:3px solid var(--ink);background:var(--paper-2);
+  padding:12px 13px;
+}
+.strip-h{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--pencil);margin-bottom:6px;
+}
+.strip p{margin:0;font-size:14px;line-height:1.45}
+.strip .big{font-family:var(--mono);font-weight:600}
+.price-rows{display:grid;gap:7px;margin-top:2px}
+.price-row{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.price-row span:last-child{font-family:var(--mono);font-weight:600;white-space:nowrap}
+.price-row.total{border-top:1px solid var(--rule);padding-top:7px}
+
+.cta{
+  display:block;width:100%;margin-top:22px;border:0;cursor:pointer;
+  background:var(--seal);color:#fff;padding:16px;
+  font-family:var(--body);font-size:15.5px;font-weight:600;
+}
+.fine{
+  font-family:var(--mono);font-size:10.5px;line-height:1.65;color:var(--pencil);
+  margin-top:20px;padding-top:12px;border-top:1px solid var(--rule);
+}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140%);
+  background:var(--ink);color:var(--paper);padding:11px 16px;
+  font-family:var(--mono);font-size:12px;z-index:99;transition:transform .26s ease-out;
+  max-width:92vw;text-align:center;
+}
+.toast.on{transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="blank-head">
+  <div class="brand">Грант під ключ</div>
+  <h1>Скільки грант <span class="hl">може дати саме вам</span></h1>
+  <div class="doc-meta">Постанова КМУ №738 · ред. №616 · чинна з 01.09.2026</div>
+</div>
+<div class="blank-sub">Заповніть три поля — розрахунок нижче оновлюється одразу</div>
+
+<!-- 01 -->
+<div class="field">
+  <div class="field-label"><span class="field-num">01</span><span class="field-title">Що ви робите з грантом</span></div>
+  <div class="segments">
+    <button class="seg" id="segStart" aria-pressed="true">
+      <span class="seg-name">Відкриваю справу</span>
+      <span class="seg-range">база 100–300 тис · max 500 тис</span>
+    </button>
+    <button class="seg" id="segGrow" aria-pressed="false">
+      <span class="seg-name">Розвиваю бізнес</span>
+      <span class="seg-range">база 0,5–1,5 млн · max 2,5 млн</span>
+    </button>
+  </div>
+</div>
+
+<!-- 02 -->
+<div class="field">
+  <div class="field-label"><span class="field-num">02</span><span class="field-title">Ваші бонусні категорії</span></div>
+  <div class="field-hint">Відсотки сумуються — позначте всі, що ваші</div>
+  <div class="rows" id="rows"></div>
+</div>
+
+<!-- 03 -->
+<div class="field">
+  <div class="field-label"><span class="field-num">03</span><span class="field-title">Термін гранту</span></div>
+  <div class="field-hint">Повертається податками, не грошима</div>
+  <div class="terms" id="terms"></div>
+</div>
+
+<!-- Резолюція -->
+<div class="verdict">
+  <div class="verdict-tag">Резолюція за вашими даними</div>
+  <div class="stamp" id="stamp">
+    <div class="stamp-title">Орієнтовний максимум гранту</div>
+    <div class="sum" id="sum">300 000 ₴</div>
+    <div class="sum-note" id="sumNote">базова сума без бонусів</div>
+    <div class="bonus-line" id="bonusLine">Бонуси не позначені — позначте свої категорії в полі 02.</div>
+  </div>
+
+  <div class="strip">
+    <div class="strip-h">Як повертати</div>
+    <p id="payback">Податками з вашого ФОП чи ТОВ, включно з податками на зарплату нових працівників.</p>
+  </div>
+
+  <div class="strip">
+    <div class="strip-h">Скільки коштує супровід</div>
+    <div class="price-rows">
+      <div class="price-row"><span>Аванс на старті роботи</span><span>5 000 ₴</span></div>
+      <div class="price-row"><span>5% після позитивного рішення</span><span id="feePct">15 000 ₴</span></div>
+      <div class="price-row total"><span>Разом при вашій сумі</span><span id="feeTotal">20 000 ₴</span></div>
+    </div>
+  </div>
+
+  <button class="cta" id="cta">Надіслати розрахунок і отримати консультацію</button>
+
+  <div class="fine">
+    Грант — безповоротна фінансова допомога за умови виконання зобов'язань за договором: цільове використання коштів, створення й утримання робочих місць, сплата податків протягом строку гранту. Розрахунок орієнтовний: остаточну суму визначає комісія за бізнес-планом і документами.
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ====== Налаштування ====== */
+var CONFIG = {
+  contact: "https://t.me/m/qEB8LZeFN2Ey",  // особистий чат Дмитра
+  webhook: ""                              // за бажанням: URL n8n-вебхука для лідів
+};
+
+var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+/* ====== Дані програми ====== */
+var TYPES = {
+  start: { name: "Відкриття справи", base: 300000, cap: 500000 },
+  grow:  { name: "Розвиток бізнесу", base: 1500000, cap: 2500000 }
+};
+
+var BONUSES = [
+  { id:"age",     pct:5,  text:"Вік 18–25 років",                     note:"на дату подання заявки" },
+  { id:"veteran", pct:20, text:"Ветеранське підприємництво",          note:"ветеран або член родини" },
+  { id:"pdv",     pct:20, text:"Платник ПДВ",                         note:"чинна реєстрація" },
+  { id:"patent",  pct:20, text:"Чинний патент на винахід",            note:"або на корисну модель" },
+  { id:"vpo",     pct:20, text:"ВПО з досвідом 6+ місяців",           note:"або релокований бізнес" },
+  { id:"jobs2",   pct:20, text:"Створюю 2 і більше робочих місць",    note:"зобов'язання в бізнес-плані" },
+  { id:"front",   pct:30, text:"Прифронтовий регіон",                 note:"9 областей і Славутич" },
+  { id:"renew",   pct:30, text:"Оновлення знищених основних засобів", note:"пошкоджених через агресію РФ" },
+  { id:"sector",  pct:50, text:"Пріоритетний сектор економіки",       note:"перелік із 8 секторів" }
+];
+
+var TERMS = [2, 3, 5];
+
+var state = { type:"start", picked:{}, term:5, shown:300000 };
+
+/* ====== Побудова інтерфейсу ====== */
+var rowsBox = document.getElementById("rows");
+BONUSES.forEach(function(b){
+  var btn = document.createElement("button");
+  btn.className = "row";
+  btn.setAttribute("aria-pressed","false");
+  btn.dataset.id = b.id;
+  btn.innerHTML =
+    '<span class="box"><svg viewBox="0 0 19 19"><path d="M3 10 L7.5 14.5 L16 4"/></svg></span>' +
+    '<span class="row-text">' + b.text + '<span class="row-note">' + b.note + '</span></span>' +
+    '<span class="pct">+' + b.pct + '%</span>';
+  btn.addEventListener("click", function(){
+    state.picked[b.id] = !state.picked[b.id];
+    btn.setAttribute("aria-pressed", state.picked[b.id] ? "true" : "false");
+    haptic("light");
+    render();
+  });
+  rowsBox.appendChild(btn);
+});
+
+var termsBox = document.getElementById("terms");
+TERMS.forEach(function(t){
+  var btn = document.createElement("button");
+  btn.className = "term";
+  btn.setAttribute("aria-pressed", t === state.term ? "true" : "false");
+  var labels = { 2:"2 роки<span>швидше закриття</span>", 3:"3 роки<span>середній темп</span>", 5:"5 років<span>менший тиск</span>" };
+  btn.innerHTML = labels[t];
+  btn.dataset.term = String(t);
+  btn.addEventListener("click", function(){
+    state.term = t;
+    Array.prototype.forEach.call(termsBox.children, function(el){
+      el.setAttribute("aria-pressed", Number(el.dataset.term) === t ? "true" : "false");
+    });
+    haptic("light");
+    render();
+  });
+  termsBox.appendChild(btn);
+});
+
+var segStart = document.getElementById("segStart");
+var segGrow  = document.getElementById("segGrow");
+segStart.addEventListener("click", function(){ setType("start"); });
+segGrow.addEventListener("click", function(){ setType("grow"); });
+
+function setType(t){
+  state.type = t;
+  segStart.setAttribute("aria-pressed", t === "start" ? "true" : "false");
+  segGrow.setAttribute("aria-pressed", t === "grow" ? "true" : "false");
+  haptic("medium");
+  render();
+}
+
+/* ====== Розрахунок ====== */
+function calc(){
+  var cfg = TYPES[state.type];
+  var pct = 0, list = [];
+  BONUSES.forEach(function(b){
+    if (state.picked[b.id]) { pct += b.pct; list.push(b); }
+  });
+  var raw = Math.round(cfg.base * (1 + pct / 100));
+  var sum = Math.min(raw, cfg.cap);
+  return {
+    cfg: cfg, pct: pct, list: list, raw: raw, sum: sum,
+    capped: raw > cfg.cap,
+    fee: Math.round(sum * 0.05),
+    monthly: Math.round(sum / (state.term * 12))
+  };
+}
+
+function money(n){
+  return n.toLocaleString("uk-UA").replace(/[\u00A0\u202F]/g, " ") + " ₴";
+}
+
+/* ====== Рендер ====== */
+var elSum = document.getElementById("sum");
+var elSumNote = document.getElementById("sumNote");
+var elBonus = document.getElementById("bonusLine");
+var elPayback = document.getElementById("payback");
+var elFeePct = document.getElementById("feePct");
+var elFeeTotal = document.getElementById("feeTotal");
+var elStamp = document.getElementById("stamp");
+
+function render(){
+  var r = calc();
+
+  countTo(state.shown, r.sum);
+  state.shown = r.sum;
+
+  elSumNote.textContent = r.capped
+    ? "стеля програми: " + money(r.cfg.cap) + " · розрахунок дав " + money(r.raw)
+    : (r.pct ? "база " + money(r.cfg.base) + " + бонуси " + r.pct + "%" : "базова сума без бонусів");
+
+  if (!r.list.length){
+    elBonus.innerHTML = "Бонуси не позначені — позначте свої категорії в полі 02.";
+  } else {
+    var names = r.list.map(function(b){ return b.text + " +" + b.pct + "%"; }).join(" · ");
+    elBonus.innerHTML = "<b>Сумарний бонус +" + r.pct + "%</b><br>" + names;
+  }
+
+  elPayback.innerHTML = "Ви не віддаєте гроші назад. Сплачуєте податки: " +
+    '<span class="big">' + money(r.monthly) + "/міс</span> у середньому за " + state.term +
+    (state.term === 5 ? " років" : " роки") + " — і грант закрито. Рахуються всі податки ФОП або ТОВ плюс податки на зарплату нових працівників.";
+
+  elFeePct.textContent = money(r.fee);
+  elFeeTotal.textContent = money(r.fee + 5000);
+
+  elStamp.classList.remove("pulse");
+  void elStamp.offsetWidth;
+  elStamp.classList.add("pulse");
+
+  if (tg && tg.MainButton){
+    tg.MainButton.setText("Мій максимум " + money(r.sum) + " → консультація");
+    tg.MainButton.show();
+  }
+}
+
+var animId = null;
+function countTo(from, to){
+  if (animId) cancelAnimationFrame(animId);
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || from === to){
+    elSum.textContent = money(to); return;
+  }
+  var t0 = performance.now(), dur = 380;
+  function step(now){
+    var p = Math.min((now - t0) / dur, 1);
+    var e = 1 - Math.pow(1 - p, 3);
+    elSum.textContent = money(Math.round(from + (to - from) * e));
+    if (p < 1) animId = requestAnimationFrame(step);
+  }
+  animId = requestAnimationFrame(step);
+}
+
+/* ====== Відправка ліда ====== */
+function payload(){
+  var r = calc();
+  var u = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user : null;
+  return {
+    source: "miniapp_calc",
+    type: r.cfg.name,
+    sum: r.sum,
+    bonus_pct: r.pct,
+    bonuses: r.list.map(function(b){ return b.text; }),
+    term_years: state.term,
+    monthly_tax: r.monthly,
+    fee: r.fee + 5000,
+    user_id: u ? u.id : null,
+    username: u ? (u.username || null) : null,
+    name: u ? [u.first_name, u.last_name].filter(Boolean).join(" ") : null,
+    ts: new Date().toISOString()
+  };
+}
+
+function textSummary(p){
+  return "Розрахунок гранту\n" +
+    "Тип: " + p.type + "\n" +
+    "Максимум: " + money(p.sum) + "\n" +
+    "Бонуси: " + (p.bonus_pct ? "+" + p.bonus_pct + "% (" + p.bonuses.join(", ") + ")" : "немає") + "\n" +
+    "Термін: " + p.term_years + " р · " + money(p.monthly_tax) + "/міс податків\n" +
+    "Супровід: " + money(p.fee);
+}
+
+function send(){
+  var p = payload();
+  var txt = textSummary(p);
+  haptic("success");
+
+  if (CONFIG.webhook){
+    try {
+      fetch(CONFIG.webhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: p, initData: tg ? tg.initData : "" })
+      });
+    } catch (e) {}
+  }
+
+  if (tg && typeof tg.sendData === "function" && tg.initData){
+    try { tg.sendData(JSON.stringify(p)); return; } catch (e) {}
+  }
+
+  copy(txt);
+  toast("Розрахунок скопійовано — вставте його в чат");
+  setTimeout(function(){
+    if (tg && tg.openTelegramLink) tg.openTelegramLink(CONFIG.contact);
+    else window.open(CONFIG.contact, "_blank");
+  }, 900);
+}
+
+function copy(t){
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t); return; }
+  } catch (e) {}
+  var ta = document.createElement("textarea");
+  ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+}
+
+var toastEl = document.getElementById("toast"), toastTimer = null;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove("on"); }, 2600);
+}
+
+function haptic(kind){
+  if (!tg || !tg.HapticFeedback) return;
+  try {
+    if (kind === "success") tg.HapticFeedback.notificationOccurred("success");
+    else tg.HapticFeedback.impactOccurred(kind);
+  } catch (e) {}
+}
+
+document.getElementById("cta").addEventListener("click", send);
+
+/* ====== Ініціалізація Telegram ====== */
+if (tg){
+  tg.ready();
+  tg.expand();
+  try { tg.setHeaderColor("#F6F2E6"); tg.setBackgroundColor("#F6F2E6"); } catch (e) {}
+  if (tg.MainButton){
+    tg.MainButton.setParams({ color: "#1A6B3C", text_color: "#FFFFFF" });
+    tg.MainButton.onClick(send);
+  }
+  if (tg.MainButton) document.getElementById("cta").style.display = "none";
+}
+
+render();
+</script>
+</body>
+</html>
