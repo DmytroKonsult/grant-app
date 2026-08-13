@@ -56,10 +56,6 @@ h1 .hl{
   background:linear-gradient(to top,var(--marker) 0,var(--marker) 42%,transparent 42%);
   padding:0 2px;
 }
-.doc-meta{
-  font-family:var(--mono);font-size:10.5px;color:var(--pencil);
-  letter-spacing:.06em;text-transform:uppercase;
-}
 .blank-sub{
   font-family:var(--mono);font-size:11px;color:var(--pencil);
   margin:8px 0 26px;letter-spacing:.04em;
@@ -275,7 +271,6 @@ h1 .hl{
 <div class="blank-head">
   <div class="brand">Грант під ключ</div>
   <h1>Ваш максимум <span class="hl">за програмою гранту</span></h1>
-  <div class="doc-meta">Постанова КМУ №738 · ред. №616 · чинна з 01.09.2026</div>
 </div>
 <div class="blank-sub">Заповніть три поля — розрахунок нижче оновлюється одразу</div>
 
@@ -345,21 +340,16 @@ h1 .hl{
   <div class="strip">
     <div class="strip-h">Скільки коштує супровід</div>
     <div class="price-rows">
-      <div class="price-row"><span>Аванс на старті роботи</span><span>5 000 ₴</span></div>
+      <div class="price-row"><span>Аванс — після перевірки ділової репутації</span><span>5 000 ₴</span></div>
       <div class="price-row"><span>5% після позитивного рішення</span><span id="feePct">15 000 ₴</span></div>
       <div class="price-row total"><span>Разом при вашій сумі</span><span id="feeTotal">20 000 ₴</span></div>
     </div>
+    <p style="margin-top:10px;font-family:var(--mono);font-size:11px;line-height:1.6;color:var(--pencil)">
+      Спершу безкоштовно перевіряємо вашу ділову репутацію: судові справи, виконавчі провадження, податковий борг, банкрутство. Якщо є перешкода — ви про це дізнаєтесь до будь-якої оплати.
+    </p>
   </div>
 
   <button class="cta" id="cta">Надіслати розрахунок і отримати консультацію</button>
-
-  <div class="strip">
-    <div class="strip-h">Першоджерела</div>
-    <p style="font-size:13.5px;line-height:1.6">
-      <a href="https://zakon.rada.gov.ua/laws/show/738-2022-%D0%BF" target="_blank" rel="noopener" style="color:var(--seal)">Постанова КМУ №738 — повний текст на zakon.rada.gov.ua</a><br>
-      <a href="https://docs.dtkt.ua/doc/616-2026-%D0%BF" target="_blank" rel="noopener" style="color:var(--seal)">Постанова КМУ №616 від 15.05.2026 — зміни, чинні з 01.09.2026</a>
-    </p>
-  </div>
 
   <div class="fine">
     Грант — безповоротна фінансова допомога за умови виконання зобов'язань за договором: цільове використання коштів, створення й утримання робочих місць, сплата податків протягом строку гранту. Розрахунок орієнтовний: остаточну суму визначає комісія за бізнес-планом і документами.
