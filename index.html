@@ -244,6 +244,22 @@ h1 .hl{
   font-family:var(--mono);font-size:10.5px;line-height:1.65;color:var(--pencil);
   margin-top:20px;padding-top:12px;border-top:1px solid var(--rule);
 }
+.sendbox{display:none;margin-top:14px;border:2px solid var(--seal);background:var(--paper-2);padding:14px}
+.sendbox.on{display:block}
+.sendbox-h{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--seal);margin-bottom:9px}
+.sendbox pre{
+  margin:0;font-family:var(--mono);font-size:12px;line-height:1.65;color:var(--ink);
+  white-space:pre-wrap;word-break:break-word;user-select:all;-webkit-user-select:all;
+  background:var(--paper);border:1px solid var(--rule);padding:10px;
+}
+.sendbox-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+.sendbox-btn{
+  border:1.5px solid var(--seal);background:var(--paper-2);color:var(--seal);
+  padding:12px 6px;cursor:pointer;font-family:var(--body);font-size:13.5px;font-weight:600;
+}
+.sendbox-btn.fill{background:var(--seal);color:#fff;border-color:var(--seal)}
+
 .toast{
   position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(140%);
   background:var(--ink);color:var(--paper);padding:11px 16px;
@@ -347,6 +363,15 @@ h1 .hl{
 
   <div class="fine">
     Грант — безповоротна фінансова допомога за умови виконання зобов'язань за договором: цільове використання коштів, створення й утримання робочих місць, сплата податків протягом строку гранту. Розрахунок орієнтовний: остаточну суму визначає комісія за бізнес-планом і документами.
+  </div>
+</div>
+
+<div class="sendbox" id="sendbox">
+  <div class="sendbox-h">Ваш розрахунок</div>
+  <pre id="sendText"></pre>
+  <div class="sendbox-row">
+    <button class="sendbox-btn" id="copyBtn">Скопіювати</button>
+    <button class="sendbox-btn fill" id="chatBtn">Написати в чат</button>
   </div>
 </div>
 
@@ -662,27 +687,45 @@ function send(){
     } catch (e) {}
   }
 
-  if (tg && typeof tg.sendData === "function" && tg.initData){
+  // sendData працює ЛИШЕ при запуску з reply-кнопки бота.
+  // Ознака такого запуску — наявність query_id в initData.
+  var hasQueryId = !!(tg && tg.initDataUnsafe && tg.initDataUnsafe.query_id);
+  if (hasQueryId && typeof tg.sendData === "function"){
     try { tg.sendData(JSON.stringify(p)); return; } catch (e) {}
   }
 
-  copy(txt);
-  toast("Розрахунок скопійовано — вставте його в чат");
-  setTimeout(function(){
-    if (tg && tg.openTelegramLink) tg.openTelegramLink(CONFIG.contact);
-    else window.open(CONFIG.contact, "_blank");
-  }, 900);
+  var box = document.getElementById("sendbox");
+  document.getElementById("sendText").textContent = txt;
+  box.classList.add("on");
+  try { box.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) {}
+
+  if (copy(txt)) toast("Розрахунок скопійовано");
+}
+
+function openChat(){
+  if (tg && tg.openTelegramLink) tg.openTelegramLink(CONFIG.contact);
+  else window.open(CONFIG.contact, "_blank");
 }
 
 function copy(t){
-  try {
-    if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(t); return; }
-  } catch (e) {}
+  var ok = false;
   var ta = document.createElement("textarea");
-  ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
-  document.body.appendChild(ta); ta.select();
-  try { document.execCommand("copy"); } catch (e) {}
+  ta.value = t;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed"; ta.style.top = "0"; ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { ta.setSelectionRange(0, t.length); } catch (e) {}
+  try { ok = document.execCommand("copy"); } catch (e) {}
   document.body.removeChild(ta);
+  if (!ok){
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t); ok = true;
+      }
+    } catch (e) {}
+  }
+  return ok;
 }
 
 var toastEl = document.getElementById("toast"), toastTimer = null;
@@ -702,6 +745,12 @@ function haptic(kind){
 }
 
 document.getElementById("cta").addEventListener("click", send);
+document.getElementById("chatBtn").addEventListener("click", openChat);
+document.getElementById("copyBtn").addEventListener("click", function(){
+  var t = document.getElementById("sendText").textContent;
+  toast(copy(t) ? "Скопійовано" : "Виділіть текст і скопіюйте вручну");
+  haptic("light");
+});
 
 /* ====== Ініціалізація Telegram ====== */
 if (tg){
