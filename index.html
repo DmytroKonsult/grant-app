@@ -358,12 +358,15 @@ h1 .hl{
 
 <div class="sendbox" id="sendbox">
   <div class="sendbox-h">Ваш розрахунок</div>
+  <div style="font-family:var(--mono);font-size:10.5px;line-height:1.55;color:var(--pencil);margin:-4px 0 9px">
+    Один тап — і розрахунок з'явиться у вашій розмові з консультантом.
+  </div>
   <pre id="sendText"></pre>
   <div class="sendbox-row">
     <button class="sendbox-btn" id="copyBtn">Скопіювати</button>
-    <button class="sendbox-btn fill" id="shareBtn">Надіслати консультанту</button>
+    <button class="sendbox-btn fill" id="shareBtn">Надіслати в розмову</button>
   </div>
-  <button class="sendbox-btn" id="chatBtn" style="width:100%;margin-top:9px">Просто відкрити чат</button>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -373,7 +376,8 @@ h1 .hl{
 
 /* ====== Налаштування ====== */
 var CONFIG = {
-  contact: "https://t.me/Grant_pid_kluch",  // особистий чат Дмитра
+  contact: "https://t.me/Grant_pid_kluch",
+  bot: "Grant_Expert_BDM_Bot",  // особистий чат Дмитра
   webhook: ""                              // за бажанням: URL n8n-вебхука для лідів
 };
 
@@ -650,6 +654,19 @@ function payload(){
   };
 }
 
+// Пакування розрахунку в start-payload (дозволені символи: A-Z a-z 0-9 _ -)
+// Формат: G-<тип>-<сума в тисячах>-<бітова маска бонусів у base36>-<строк>
+function encodePayload(){
+  var r = calc();
+  var mask = 0;
+  BONUSES.forEach(function(b, i){ if (state.picked[b.id]) mask |= (1 << i); });
+  return ["G",
+          state.type === "grow" ? "G" : "S",
+          Math.round(r.sum / 1000),
+          mask.toString(36),
+          state.term].join("-");
+}
+
 function textSummary(p){
   return "Розрахунок гранту\n" +
     "Тип: " + p.type + "\n" +
@@ -698,13 +715,20 @@ function openLink(u){
   else window.open(u, "_blank");
 }
 
-// Share-вікно Telegram. Параметр url обов'язковий: без нього
-// Telegram не розпізнає посилання і відкриває його в браузері.
-// Тому підставляємо власний контакт, а не посилання на апку.
+// Повертає розрахунок у ТУ САМУ розмову від імені клієнта.
+// switchInlineQuery вставляє inline-запит у поле введення поточного чату,
+// клієнт тапає результат — і повідомлення йде від нього. Апка закривається сама.
 function shareCalc(){
+  if (tg && typeof tg.switchInlineQuery === "function"){
+    try {
+      tg.switchInlineQuery(encodePayload(), ["users"]);
+      return;
+    } catch (e) {}
+  }
+  // Резерв для старих клієнтів Telegram, де inline недоступний
   var txt = document.getElementById("sendText").textContent;
-  openLink("https://t.me/share/url?url=" + encodeURIComponent(CONFIG.contact) +
-           "&text=" + encodeURIComponent(txt));
+  if (copy(txt)) toast("Розрахунок скопійовано — вставте його в чат");
+  else toast("Виділіть текст розрахунку і скопіюйте");
 }
 
 function openChat(){ openLink(CONFIG.contact); }
@@ -747,7 +771,6 @@ function haptic(kind){
 }
 
 document.getElementById("cta").addEventListener("click", send);
-document.getElementById("chatBtn").addEventListener("click", openChat);
 document.getElementById("shareBtn").addEventListener("click", function(){
   haptic("light"); shareCalc();
 });
