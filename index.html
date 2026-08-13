@@ -698,10 +698,13 @@ function openLink(u){
   else window.open(u, "_blank");
 }
 
-// Share-вікно Telegram: лише текст розрахунку, без посилань
+// Share-вікно Telegram. Параметр url обов'язковий: без нього
+// Telegram не розпізнає посилання і відкриває його в браузері.
+// Тому підставляємо власний контакт, а не посилання на апку.
 function shareCalc(){
   var txt = document.getElementById("sendText").textContent;
-  openLink("https://t.me/share/url?text=" + encodeURIComponent(txt));
+  openLink("https://t.me/share/url?url=" + encodeURIComponent(CONFIG.contact) +
+           "&text=" + encodeURIComponent(txt));
 }
 
 function openChat(){ openLink(CONFIG.contact); }
