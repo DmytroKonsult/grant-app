@@ -371,8 +371,9 @@ h1 .hl{
   <pre id="sendText"></pre>
   <div class="sendbox-row">
     <button class="sendbox-btn" id="copyBtn">Скопіювати</button>
-    <button class="sendbox-btn fill" id="chatBtn">Написати в чат</button>
+    <button class="sendbox-btn fill" id="shareBtn">Надіслати консультанту</button>
   </div>
+  <button class="sendbox-btn" id="chatBtn" style="width:100%;margin-top:9px">Просто відкрити чат</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -382,7 +383,8 @@ h1 .hl{
 
 /* ====== Налаштування ====== */
 var CONFIG = {
-  contact: "https://t.me/m/qEB8LZeFN2Ey",  // особистий чат Дмитра
+  contact: "https://t.me/Grant_pid_kluch",
+  appLink: "https://t.me/Grant_Expert_BDM_Bot/calc",  // особистий чат Дмитра
   webhook: ""                              // за бажанням: URL n8n-вебхука для лідів
 };
 
@@ -702,10 +704,19 @@ function send(){
   if (copy(txt)) toast("Розрахунок скопійовано");
 }
 
-function openChat(){
-  if (tg && tg.openTelegramLink) tg.openTelegramLink(CONFIG.contact);
-  else window.open(CONFIG.contact, "_blank");
+function openLink(u){
+  if (tg && tg.openTelegramLink) tg.openTelegramLink(u);
+  else window.open(u, "_blank");
 }
+
+// Share-вікно Telegram: текст уже вставлений, лишається вибрати чат
+function shareCalc(){
+  var txt = document.getElementById("sendText").textContent;
+  openLink("https://t.me/share/url?url=" + encodeURIComponent(CONFIG.appLink) +
+           "&text=" + encodeURIComponent(txt + "\n\nПрошу консультацію."));
+}
+
+function openChat(){ openLink(CONFIG.contact); }
 
 function copy(t){
   var ok = false;
@@ -746,6 +757,9 @@ function haptic(kind){
 
 document.getElementById("cta").addEventListener("click", send);
 document.getElementById("chatBtn").addEventListener("click", openChat);
+document.getElementById("shareBtn").addEventListener("click", function(){
+  haptic("light"); shareCalc();
+});
 document.getElementById("copyBtn").addEventListener("click", function(){
   var t = document.getElementById("sendText").textContent;
   toast(copy(t) ? "Скопійовано" : "Виділіть текст і скопіюйте вручну");
