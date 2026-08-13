@@ -373,8 +373,7 @@ h1 .hl{
 
 /* ====== Налаштування ====== */
 var CONFIG = {
-  contact: "https://t.me/Grant_pid_kluch",
-  appLink: "https://t.me/Grant_Expert_BDM_Bot/calc",  // особистий чат Дмитра
+  contact: "https://t.me/Grant_pid_kluch",  // особистий чат Дмитра
   webhook: ""                              // за бажанням: URL n8n-вебхука для лідів
 };
 
@@ -699,11 +698,10 @@ function openLink(u){
   else window.open(u, "_blank");
 }
 
-// Share-вікно Telegram: текст уже вставлений, лишається вибрати чат
+// Share-вікно Telegram: лише текст розрахунку, без посилань
 function shareCalc(){
   var txt = document.getElementById("sendText").textContent;
-  openLink("https://t.me/share/url?url=" + encodeURIComponent(CONFIG.appLink) +
-           "&text=" + encodeURIComponent(txt + "\n\nПрошу консультацію."));
+  openLink("https://t.me/share/url?text=" + encodeURIComponent(txt));
 }
 
 function openChat(){ openLink(CONFIG.contact); }
