@@ -23,6 +23,8 @@
   --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+button:focus{outline:none}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 html,body{margin:0;padding:0}
 body{
   background:var(--paper);
@@ -71,6 +73,11 @@ h1 .hl{
   background:var(--ink);padding:2px 6px 1px;letter-spacing:.05em;flex:0 0 auto;
 }
 .field-title{font-family:var(--display);font-weight:600;font-size:16.5px;line-height:1.25}
+.duty-line{
+  margin-top:11px;padding-top:10px;border-top:1px dashed var(--seal);
+  font-family:var(--mono);font-size:11.5px;line-height:1.6;
+}
+.duty-line b{background:var(--marker);padding:1px 4px;font-weight:600}
 .field-hint{
   font-family:var(--mono);font-size:11px;color:var(--pencil);
   margin:-5px 0 11px 33px;letter-spacing:.02em;
@@ -82,15 +89,26 @@ h1 .hl{
   border:1.5px solid var(--rule);background:var(--paper-2);
   padding:13px 12px;text-align:left;cursor:pointer;
   font-family:var(--body);color:var(--ink);
+  display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;
   transition:border-color .16s,box-shadow .16s,background .16s;
 }
-.seg-name{font-weight:600;font-size:14.5px;display:block}
+.seg-name{font-weight:600;font-size:14.5px;display:block;margin-bottom:6px}
 .seg-range{font-family:var(--mono);font-size:11px;color:var(--pencil);display:block;margin-top:3px}
+.seg-spec{
+  display:grid;grid-template-columns:auto 1fr;gap:2px 6px;
+  font-family:var(--mono);font-size:10.5px;line-height:1.4;color:var(--pencil);
+}
+.seg-spec .k{text-transform:uppercase;letter-spacing:.06em;color:var(--pencil)}
+.seg-spec .v{color:var(--ink);font-weight:600}
+.seg-req{
+  display:block;margin-top:8px;padding-top:7px;border-top:1px solid var(--rule);
+  font-family:var(--mono);font-size:10.5px;font-weight:600;line-height:1.35;color:var(--seal);
+}
 .seg[aria-pressed="true"]{
   border-color:var(--seal);background:var(--seal-soft);
   box-shadow:inset 0 0 0 1px var(--seal);
 }
-.seg[aria-pressed="true"] .seg-range{color:var(--seal)}
+
 
 /* ---------- Чек-бокси бонусів ---------- */
 .rows{border-top:1px solid var(--rule)}
@@ -117,6 +135,21 @@ h1 .hl{
 .row[aria-pressed="true"] .pct{background:var(--marker);color:var(--ink)}
 
 /* ---------- Термін ---------- */
+.listbox{border-bottom:1px solid var(--rule);padding:0 2px 10px;margin-top:-8px}
+.list-toggle{
+  border:0;background:transparent;padding:4px 0;cursor:pointer;
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  color:var(--seal);text-decoration:underline;text-underline-offset:2px;
+}
+.list-panel{display:none;margin-top:8px;border-left:2px solid var(--seal);padding:2px 0 2px 11px}
+.list-panel.on{display:block}
+.list-panel li{font-family:var(--mono);font-size:11.5px;line-height:1.7;list-style:none}
+.list-panel ul{margin:0;padding:0}
+.list-panel .src{
+  font-family:var(--mono);font-size:10px;color:var(--pencil);margin-top:7px;line-height:1.5;
+}
+.list-panel .pending{font-family:var(--mono);font-size:11.5px;line-height:1.6;color:var(--pencil)}
+
 .terms{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
 .term{
   border:1.5px solid var(--rule);background:var(--paper-2);padding:11px 4px;
@@ -171,6 +204,37 @@ h1 .hl{
 .price-row span:last-child{font-family:var(--mono);font-weight:600;white-space:nowrap}
 .price-row.total{border-top:1px solid var(--rule);padding-top:7px}
 
+.req{
+  margin-top:13px;border:1.5px solid var(--seal);background:var(--seal-soft);
+  padding:12px 13px;display:none;
+}
+.req.on{display:block}
+.req-h{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--seal);margin-bottom:6px;
+}
+.req p{margin:0;font-size:14px;line-height:1.45}
+.req .num{font-family:var(--mono);font-weight:600;white-space:nowrap}
+.req .job{background:var(--marker);padding:1px 3px;font-weight:600}
+
+.req-check{
+  display:flex;align-items:flex-start;gap:10px;width:100%;margin-top:11px;
+  border:0;border-top:1px solid rgba(26,107,60,.3);background:transparent;
+  padding:11px 0 0;text-align:left;cursor:pointer;font-family:var(--body);color:var(--ink);
+}
+.req-check .box{flex:0 0 auto;width:20px;height:20px;margin-top:1px;border:1.5px solid var(--seal);background:var(--paper-2);position:relative}
+.req-check .box svg{position:absolute;left:1px;top:0;width:19px;height:19px;stroke:var(--seal);
+  stroke-width:2.4;fill:none;stroke-linecap:round;stroke-dasharray:26;stroke-dashoffset:26;
+  transition:stroke-dashoffset .22s ease-out}
+.req-check[aria-pressed="true"] .box svg{stroke-dashoffset:0}
+.req-check span.t{flex:1 1 auto;font-size:13.5px;line-height:1.35;font-weight:600;color:var(--seal)}
+.blocked{opacity:.32;pointer-events:none;filter:grayscale(1)}
+.block-note{
+  margin-top:13px;border:1.5px dashed var(--ink);background:var(--paper-2);padding:13px;
+  font-family:var(--mono);font-size:12px;line-height:1.6;display:none;
+}
+.block-note.on{display:block}
+
 .cta{
   display:block;width:100%;margin-top:22px;border:0;cursor:pointer;
   background:var(--seal);color:#fff;padding:16px;
@@ -205,11 +269,26 @@ h1 .hl{
   <div class="segments">
     <button class="seg" id="segStart" aria-pressed="true">
       <span class="seg-name">Відкриваю справу</span>
-      <span class="seg-range">база 100–300 тис · max 500 тис</span>
+      <span class="seg-spec">
+        <span class="k">База</span><span class="v">100–300 тис ₴</span>
+        <span class="k">Максимум</span><span class="v">500 тис ₴</span>
+      </span>
     </button>
     <button class="seg" id="segGrow" aria-pressed="false">
       <span class="seg-name">Розвиваю бізнес</span>
-      <span class="seg-range">база 0,5–1,5 млн · max 2,5 млн</span>
+      <span class="seg-spec">
+        <span class="k">База</span><span class="v">0,5–1,5 млн ₴</span>
+        <span class="k">Максимум</span><span class="v">2,5 млн ₴</span>
+      </span>
+      <span class="seg-req">Мінімум 1 робоче місце</span>
+    </button>
+  </div>
+  <div class="req" id="reqGrow">
+    <div class="req-h">Обов'язкова умова масштабування</div>
+    <p>Грант <span class="num">від 500 000 до 1 500 000 ₴</span> включно надається на масштабування власної справи із зобов'язанням отримувача <span class="job">створити одне нове робоче місце</span>.</p>
+    <button class="req-check" id="reqCheck" aria-pressed="false">
+      <span class="box"><svg viewBox="0 0 19 19"><path d="M3 10 L7.5 14.5 L16 4"/></svg></span>
+      <span class="t">Готовий створити мінімум 1 робоче місце</span>
     </button>
   </div>
 </div>
@@ -231,11 +310,15 @@ h1 .hl{
 <!-- Резолюція -->
 <div class="verdict">
   <div class="verdict-tag">Резолюція за вашими даними</div>
+  <div class="block-note" id="blockNote">
+    Розрахунок для масштабування недоступний без цієї умови. Створення мінімум одного нового робочого місця — не рекомендація, а зобов'язання за договором. Якщо взяти його не готові, розглядайте грант на відкриття справи.
+  </div>
   <div class="stamp" id="stamp">
     <div class="stamp-title">Орієнтовний максимум гранту</div>
     <div class="sum" id="sum">300 000 ₴</div>
     <div class="sum-note" id="sumNote">базова сума без бонусів</div>
     <div class="bonus-line" id="bonusLine">Бонуси не позначені — позначте свої категорії в полі 02.</div>
+    <div class="duty-line" id="dutyLine" hidden></div>
   </div>
 
   <div class="strip">
@@ -253,6 +336,14 @@ h1 .hl{
   </div>
 
   <button class="cta" id="cta">Надіслати розрахунок і отримати консультацію</button>
+
+  <div class="strip">
+    <div class="strip-h">Першоджерела</div>
+    <p style="font-size:13.5px;line-height:1.6">
+      <a href="https://zakon.rada.gov.ua/laws/show/738-2022-%D0%BF" target="_blank" rel="noopener" style="color:var(--seal)">Постанова КМУ №738 — повний текст на zakon.rada.gov.ua</a><br>
+      <a href="https://docs.dtkt.ua/doc/616-2026-%D0%BF" target="_blank" rel="noopener" style="color:var(--seal)">Постанова КМУ №616 від 15.05.2026 — зміни, чинні з 01.09.2026</a>
+    </p>
+  </div>
 
   <div class="fine">
     Грант — безповоротна фінансова допомога за умови виконання зобов'язань за договором: цільове використання коштів, створення й утримання робочих місць, сплата податків протягом строку гранту. Розрахунок орієнтовний: остаточну суму визначає комісія за бізнес-планом і документами.
@@ -274,8 +365,32 @@ var tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : nu
 
 /* ====== Дані програми ====== */
 var TYPES = {
-  start: { name: "Відкриття справи", base: 300000, cap: 500000 },
-  grow:  { name: "Розвиток бізнесу", base: 1500000, cap: 2500000 }
+  start: {
+    name: "Відкриття справи",
+    base: 300000, cap: 500000,
+    duty: ""
+  },
+  grow: {
+    name: "Масштабування власної справи",
+    base: 1500000, cap: 2500000,
+    duty: "Одне нове робоче місце"
+  }
+};
+
+var LISTS = {
+  front: {
+    label: "Перелік територій",
+    items: ["Дніпропетровська область","Донецька область","Запорізька область",
+            "Миколаївська область","Одеська область","Сумська область",
+            "Харківська область","Херсонська область","Чернігівська область",
+            "Славутицька міська територіальна громада (Київська обл.)"],
+    src: "Абзац 6 пункту 4 Порядку в редакції постанови КМУ №616 від 15.05.2026."
+  },
+  sector: {
+    label: "Перелік секторів",
+    items: [],
+    src: "Діапазони КВЕД встановлює наказ Мінекономіки. Напишіть свій КВЕД — перевіримо вручну за чинним додатком."
+  }
 };
 
 var BONUSES = [
@@ -285,14 +400,14 @@ var BONUSES = [
   { id:"patent",  pct:20, text:"Чинний патент на винахід",            note:"або на корисну модель" },
   { id:"vpo",     pct:20, text:"ВПО з досвідом 6+ місяців",           note:"або релокований бізнес" },
   { id:"jobs2",   pct:20, text:"Створюю 2 і більше робочих місць",    note:"зобов'язання в бізнес-плані" },
-  { id:"front",   pct:30, text:"Прифронтовий регіон",                 note:"за переліком у постанові" },
+  { id:"front",   pct:30, text:"Прифронтовий регіон",                 note:"8 областей — перелік нижче" },
   { id:"renew",   pct:30, text:"Оновлення знищених основних засобів", note:"пошкоджених через агресію РФ" },
-  { id:"sector",  pct:50, text:"Пріоритетний сектор економіки",       note:"перелік із 8 секторів" }
+  { id:"sector",  pct:50, text:"Пріоритетний сектор економіки",       note:"за наказом Мінекономіки" }
 ];
 
 var TERMS = [2, 3, 5];
 
-var state = { type:"start", picked:{}, term:5, shown:300000 };
+var state = { type:"start", picked:{}, term:5, shown:300000, jobOk:false };
 
 /* ====== Побудова інтерфейсу ====== */
 var rowsBox = document.getElementById("rows");
@@ -312,6 +427,47 @@ BONUSES.forEach(function(b){
     render();
   });
   rowsBox.appendChild(btn);
+
+  var L = LISTS[b.id];
+  if (!L) return;
+
+  var box = document.createElement("div");
+  box.className = "listbox";
+  var tog = document.createElement("button");
+  tog.className = "list-toggle";
+  tog.type = "button";
+  tog.textContent = L.label + " ⌄";
+  var panel = document.createElement("div");
+  panel.className = "list-panel";
+
+  if (L.items.length){
+    var ul = document.createElement("ul");
+    L.items.forEach(function(it){
+      var li = document.createElement("li");
+      li.textContent = "— " + it;
+      ul.appendChild(li);
+    });
+    panel.appendChild(ul);
+  } else {
+    var pend = document.createElement("div");
+    pend.className = "pending";
+    pend.textContent = "Перелік уточнюється.";
+    panel.appendChild(pend);
+  }
+  var src = document.createElement("div");
+  src.className = "src";
+  src.textContent = L.src;
+  panel.appendChild(src);
+
+  tog.addEventListener("click", function(){
+    var open = panel.classList.toggle("on");
+    tog.textContent = L.label + (open ? " ⌃" : " ⌄");
+    haptic("light");
+  });
+
+  box.appendChild(tog);
+  box.appendChild(panel);
+  rowsBox.appendChild(box);
 });
 
 var termsBox = document.getElementById("terms");
@@ -333,6 +489,14 @@ TERMS.forEach(function(t){
   termsBox.appendChild(btn);
 });
 
+var reqCheck = document.getElementById("reqCheck");
+reqCheck.addEventListener("click", function(){
+  state.jobOk = !state.jobOk;
+  reqCheck.setAttribute("aria-pressed", state.jobOk ? "true" : "false");
+  haptic(state.jobOk ? "success" : "light");
+  render();
+});
+
 var segStart = document.getElementById("segStart");
 var segGrow  = document.getElementById("segGrow");
 segStart.addEventListener("click", function(){ setType("start"); });
@@ -342,6 +506,7 @@ function setType(t){
   state.type = t;
   segStart.setAttribute("aria-pressed", t === "start" ? "true" : "false");
   segGrow.setAttribute("aria-pressed", t === "grow" ? "true" : "false");
+  document.getElementById("reqGrow").classList.toggle("on", t === "grow");
   haptic("medium");
   render();
 }
@@ -400,12 +565,34 @@ function render(){
   elFeePct.textContent = money(r.fee);
   elFeeTotal.textContent = money(r.fee + 5000);
 
+  var dLine = document.getElementById("dutyLine");
+  if (r.cfg.duty){
+    dLine.innerHTML = "Зобов'язання за цим напрямом: <b>" + r.cfg.duty + "</b>";
+    dLine.hidden = false;
+  } else {
+    dLine.hidden = true;
+  }
+
+  var locked = (state.type === "grow" && !state.jobOk);
+  document.getElementById("blockNote").classList.toggle("on", locked);
+  elStamp.classList.toggle("blocked", locked);
+  document.getElementById("cta").disabled = locked;
+  document.getElementById("cta").style.opacity = locked ? ".4" : "1";
+
   elStamp.classList.remove("pulse");
   void elStamp.offsetWidth;
   elStamp.classList.add("pulse");
 
   if (tg && tg.MainButton){
-    tg.MainButton.setText("Мій максимум " + money(r.sum) + " → консультація");
+    if (locked){
+      tg.MainButton.setText("Підтвердіть умову про робоче місце");
+      tg.MainButton.disable();
+      tg.MainButton.setParams({ color: "#B8B2A2", text_color: "#FFFFFF" });
+    } else {
+      tg.MainButton.setText("Мій максимум " + money(r.sum) + " → консультація");
+      tg.MainButton.enable();
+      tg.MainButton.setParams({ color: "#1A6B3C", text_color: "#FFFFFF" });
+    }
     tg.MainButton.show();
   }
 }
@@ -437,6 +624,7 @@ function payload(){
     bonus_pct: r.pct,
     bonuses: r.list.map(function(b){ return b.text; }),
     term_years: state.term,
+    job_obligation: state.type === "grow" ? "підтвердив: мінімум 1 нове робоче місце" : null,
     monthly_tax: r.monthly,
     fee: r.fee + 5000,
     user_id: u ? u.id : null,
@@ -456,6 +644,10 @@ function textSummary(p){
 }
 
 function send(){
+  if (state.type === "grow" && !state.jobOk){
+    toast("Спершу підтвердіть умову про робоче місце");
+    return;
+  }
   var p = payload();
   var txt = textSummary(p);
   haptic("success");
